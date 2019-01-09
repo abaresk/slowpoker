@@ -4,7 +4,6 @@ import numpy as np
 from collections import defaultdict
 
 # Constants
-
 types = ['normal', 'fire', 'fighting', 'water', 'flying', 'grass', 'poison',
 		 'electric', 'ground', 'psychic', 'rock', 'ice', 'bug', 'dragon', 
 		 'ghost', 'dark', 'steel', 'fairy']
@@ -62,7 +61,7 @@ class Table():
 	
 # Test
 t = Table(2)
-for i in range(6):
+for i in range(100000):
 	t.redraw()
 	t.sortHands()
 	t.display()
