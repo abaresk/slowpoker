@@ -63,13 +63,17 @@ class Table():
 t = Table(2)
 m = Matchup()
 
-for i in range(1000):
+for i in range(100):
 	t.redraw()
 	t.sortHands()
 
 	for hand in t.hands:
-		htype = m.findHandType(hand)
-		if htype[0] > 9:
-			print(htype)
-			t.display()
+		htype = m.findHandRank(hand)
+		# if htype[0] > 9:
+		print(htype)
+	
+	t.display()
+	rank = m.handCmp(t.hands[0], t.hands[1])
+
+	print(rank)
 

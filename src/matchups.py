@@ -22,21 +22,32 @@ class Matchup():
 			* -1 if hand1 is ranked worse than hand2
 		'''
 		h1, h2 = hand1[:], hand2[:]
-		htype1, htype2 = self.findHandType(hand1), self.findHandType(hand2)
 
-		if htype1[0] != htype2[0]:
-			return 1 if htype1 > htype2 else -1
+		while h1 and h2:
+			(hrank1, hwin1), (hrank2, hwin2) = self.findHandRank(h1), self.findHandRank(h2)
 
-		# when there's a tie
+			if hrank1 != hrank2:
+				return 1 if hrank1 > hrank2 else -1
 
-		pass
+			# They're tied at the same rank, so check level differences
+			# Winner goes to the winning set with greatest level sum
+			sum1, sum2 = sum([x % NUM_LEVELS + 1 for i,x in enumerate(h1) if i in hwin1]), sum([x % NUM_LEVELS + 1 for i,x in enumerate(h2) if i in hwin2])
+			if sum1 != sum2:
+				return 1 if sum1 > sum2 else -1
 
-	def findHandType(self, hand):
+			# Level sums were equal for both hands' winning cards
+			# Remove winning cards from both hands and try again
+			h1, h2 = [x for i,x in enumerate(h1) if i not in hwin1], [x for i,x in enumerate(h2) if i not in hwin2]
+
+		return 0
+
+
+	def findHandRank(self, hand):
 		'''
-		Return type of hand and winning indices of cards in that hand
+		Return rank of hand and winning indices of cards in that hand
 
-		Hand types:
-			* 11 	-> 3 in evo set, 2 in evo set
+		Hand ranks:
+			* 11	-> 3 in evo set, 2 in evo set
 			* 10	-> 5 fully evolved
 			* 9		-> 5 same level
 			* 8		-> 3 in evo set only
@@ -104,7 +115,7 @@ class Matchup():
 
 		# nothing
 		else:
-			return (0, [])
+			return (0, [x for x in range(len(hand))])
 
 
 	def _winnerIndices(self, hand, searchType, searchParams):
