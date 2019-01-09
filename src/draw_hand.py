@@ -3,33 +3,33 @@ import random
 import numpy as np
 from collections import defaultdict
 
-# Constants
-types = ['normal', 'fire', 'fighting', 'water', 'flying', 'grass', 'poison',
-		 'electric', 'ground', 'psychic', 'rock', 'ice', 'bug', 'dragon', 
-		 'ghost', 'dark', 'steel', 'fairy']
-
-NUM_LEVELS = 3
-SIZE_DECK = len(types) * NUM_LEVELS
-SIZE_HAND = 5
-
+from constants import *
+from matchups import Matchup
 
 class Table():
 	def __init__(self, numPlayers):
 		self.numPlayers = numPlayers
-		self.hands = self.redraw()
+		self.hands = None
+		self.reserve = None
+		self.redraw()
 
 	def redraw(self):
-		hands = random.sample(range(SIZE_DECK), SIZE_HAND * self.numPlayers)
+		drawn = random.sample(range(SIZE_DECK), 2 * SIZE_HAND * self.numPlayers)
+		hands = drawn[:SIZE_HAND * self.numPlayers]
 		self.hands = np.reshape(hands, (self.numPlayers, SIZE_HAND)).tolist()
+		self.reserve = drawn[SIZE_HAND * self.numPlayers:]
 		return
 
 	def display(self):
 		for hand in self.hands:
 			for card in hand:
-				print(types[card//NUM_LEVELS] + str(card%NUM_LEVELS+1), end=' ')
+				print(self._nameCard(card), end=' ')
 			print()
 		print()
 		return
+
+	def _nameCard(self, num):
+		return types[num // NUM_LEVELS] + str(num % NUM_LEVELS + 1)
 
 	def sortHands(self):
 		for i, hand in enumerate(self.hands):
@@ -61,7 +61,15 @@ class Table():
 	
 # Test
 t = Table(2)
-for i in range(100000):
+m = Matchup()
+
+for i in range(1000):
 	t.redraw()
 	t.sortHands()
-	t.display()
+
+	for hand in t.hands:
+		htype = m.findHandType(hand)
+		if htype[0] > 9:
+			print(htype)
+			t.display()
+
