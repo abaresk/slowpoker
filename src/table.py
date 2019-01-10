@@ -22,7 +22,7 @@ class Table():
 	def display(self):
 		for hand in self.hands:
 			for card in hand:
-				print(nameCard(card), end=' ')
+				print(card2name(card), end=' ')
 			print()
 		print()
 		return

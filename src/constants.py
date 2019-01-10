@@ -31,7 +31,7 @@ NUM_TYPES = len(types)
 SIZE_DECK = NUM_TYPES * NUM_LEVELS
 SIZE_HAND = 5
 
-def nameCard(num):
+def card2name(num):
 	return types[num // NUM_LEVELS] + str(num % NUM_LEVELS + 1)
 
 def name2card(card_name):

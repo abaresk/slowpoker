@@ -124,12 +124,25 @@ class Matchup():
 		return tuple(sorted(dict.items()))
 
 
+	# for debugging
 	def _memoRanks(self, memoStrategy):
 		s = set()
 		for strat in memoStrategy.values():
 			s.add(strat)
 		return [self.findHandRank(strat.defHand)[0] for strat in s]
 
+	def _memoChecker(self, memoStrategy, attTeam, defTeam):
+		output = []
+		s = set()
+		for st in memoStrategy.values():
+			s.add(st)
+
+		strat = memoStrategy[(self._tuplify(attTeam), self._tuplify(defTeam))]
+
+		for st in s:
+			output.append(self.handCmp(st.defHand, strat.defHand))
+
+		return output
 
 
 	def handCmp(self, hand1, hand2):
