@@ -81,7 +81,7 @@ class Matchup():
 					if bestStrat is None:
 						bestStrat = strat
 					else:
-						bestStrat = strat if self.handCmp(strat.defHand, bestStrat.defHand) > 0 else bestStrat
+						bestStrat = strat if self.handCmp(strat.defHand, bestStrat.defHand) < 0 else bestStrat
 
 					self._prepareState(attTeam, defTeam, attCard, defCard, moveHistory, 1)
 
@@ -95,7 +95,7 @@ class Matchup():
 	def _findTargets(self, attTeam, defTeam, attHand, defHand):
 		targets = set()
 
-		while defHand:
+		while defHand and not targets:
 			defRank, defWinners = self.findHandRank(defHand)
 
 			# return defTargets if we can attack any of them
@@ -108,8 +108,6 @@ class Matchup():
 			if not targets:
 				#... retry with next highest rank
 				defHand = [card for i,card in enumerate(defHand) if i not in defWinners]
-			else:
-				break
 
 		return targets
 
@@ -124,6 +122,13 @@ class Matchup():
 
 	def _tuplify(self, dict):
 		return tuple(sorted(dict.items()))
+
+
+	def _memoRanks(self, memoStrategy):
+		s = set()
+		for strat in memoStrategy.values():
+			s.add(strat)
+		return [self.findHandRank(strat.defHand)[0] for strat in s]
 
 
 
