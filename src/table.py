@@ -3,8 +3,7 @@ import random
 import numpy as np
 from collections import defaultdict
 
-from constants import *
-from matchups import Matchup
+from src.constants import *
 
 class Table():
 	def __init__(self, numPlayers):
@@ -23,13 +22,10 @@ class Table():
 	def display(self):
 		for hand in self.hands:
 			for card in hand:
-				print(self._nameCard(card), end=' ')
+				print(nameCard(card), end=' ')
 			print()
 		print()
 		return
-
-	def _nameCard(self, num):
-		return types[num // NUM_LEVELS] + str(num % NUM_LEVELS + 1)
 
 	def sortHands(self):
 		for i, hand in enumerate(self.hands):
@@ -58,22 +54,27 @@ class Table():
 		return sum([(1 + x % NUM_LEVELS) for x in lst])
 
 
-	
-# Test
-t = Table(2)
-m = Matchup()
 
-for i in range(100):
-	t.redraw()
-	t.sortHands()
+# if __name__ == '__main__':
+# 	t = Table(2)
+# 	m = Matchup()
 
-	for hand in t.hands:
-		htype = m.findHandRank(hand)
-		# if htype[0] > 9:
-		print(htype)
-	
-	t.display()
-	rank = m.handCmp(t.hands[0], t.hands[1])
+# 	for i in range(100):
+# 		t.redraw()
+# 		t.sortHands()
 
-	print(rank)
+# 		for hand in t.hands:
+# 			htype = m.findHandRank(hand)
+# 			if htype[0] > 9:
+# 				print(htype)
+# 				t.display()
+# 			htype = m.findHandRank(hand)
+# 			# if htype[0] > 9:
+# 			print(htype)
 
+# 		t.display()
+# 		rank = m.handCmp(t.hands[0], t.hands[1])
+
+# 		print(rank)
+
+# 	print('Everything passed')

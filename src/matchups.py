@@ -10,10 +10,123 @@ Matchup is a collection of functions that will be used for one hand to attack
 another.
 '''
 
-from constants import *
+from src.constants import *
+
+# class Team():
+# 	'''
+# 	card is id of the card
+# 	tokens is the stock of tokens that card has (initialized as its level)
+# 	'''
+# 	def __init__(self, hand):
+# 		self.card = card
+# 		self.tokens = card % NUM_LEVELS + 1
+# 		return
+
+
+class Strategy():
+	'''
+	Final state of matchup, showing the opponent's reduced hand and the moves that
+	reduced it
+	'''
+	def __init__(self, defHand, moveHistory):
+		self.defHand = defHand[:]
+		self.moveHistory = moveHistory[:]
+		return
+
 
 class Matchup():
-	
+
+	def bestStrategy(self, hAttack, hDefense):
+		memoStrategy = {}
+
+		# moveHistory stores the sequence of (attCard, defCard) pairs 
+		# representing 1 token that attCard used against defCard
+		moveHistory = []
+
+		# Each team is a dictionary mapping the card to its token count
+		attTeam = {card : card % NUM_LEVELS + 1 for card in hAttack}
+		defTeam = {card : card % NUM_LEVELS + 1 for card in hDefense}
+
+		return self._bestStrategyAux(attTeam, defTeam, memoStrategy, moveHistory)
+
+	def _bestStrategyAux(self, attTeam, defTeam, memoStrategy, moveHistory):
+		# use memoized solution when possible
+		if (self._tuplify(attTeam), self._tuplify(defTeam)) in memoStrategy:
+			return memoStrategy[(self._tuplify(attTeam), self._tuplify(defTeam))]
+
+		attHand = [card for card, val in attTeam.items() if val > 0]
+		defHand = [card for card, val in defTeam.items() if val > 0]
+
+		# defTargets gives top threats, which should be targeted
+		defTargets = self._findTargets(attTeam, defTeam, attHand, defHand)
+
+		# if there's nobody to attack, return the final hand and the moves made
+		if not defTargets:
+			return Strategy(defHand, moveHistory)
+
+		# out of all ways to expend 1 token, we want to return the one that 
+		# damages the opponent most
+		bestStrat = None
+
+		# for each defender...
+		for defCard in defTargets:
+			#... find attackers with a super-effective attack...
+			for attCard in attHand:
+				if types[defCard // NUM_LEVELS] in typeEffChart[types[attCard // NUM_LEVELS]]:
+					
+					#... and see what happens when they spend a token
+					self._prepareState(attTeam, defTeam, attCard, defCard, moveHistory, -1)
+
+					strat = self._bestStrategyAux(attTeam, defTeam, memoStrategy, moveHistory)
+					if bestStrat is None:
+						bestStrat = strat
+					else:
+						bestStrat = strat if self.handCmp(strat.defHand, bestStrat.defHand) > 0 else bestStrat
+
+					self._prepareState(attTeam, defTeam, attCard, defCard, moveHistory, 1)
+
+
+		memoStrategy[(self._tuplify(attTeam), self._tuplify(defTeam))] = bestStrat
+
+		return bestStrat
+
+
+	# find cards in defender's hand that should be targeted
+	def _findTargets(self, attTeam, defTeam, attHand, defHand):
+		targets = set()
+
+		while defHand:
+			defRank, defWinners = self.findHandRank(defHand)
+
+			# return defTargets if we can attack any of them
+			for defIndex in defWinners:
+				for attCard in attHand:
+					if types[defHand[defIndex] // NUM_LEVELS] in typeEffChart[types[attCard // NUM_LEVELS]]:
+						targets.add(defHand[defIndex])
+
+			# if attTeam can't attack any top-tier threats...
+			if not targets:
+				#... retry with next highest rank
+				defHand = [card for i,card in enumerate(defHand) if i not in defWinners]
+			else:
+				break
+
+		return targets
+
+	def _prepareState(self, attTeam, defTeam, attCard, defCard, moveHistory, delta):
+		attTeam[attCard] += delta
+		defTeam[defCard] += delta
+		if delta < 0:
+			moveHistory.append((attCard, defCard))
+		else:
+			moveHistory.pop()
+		return
+
+	def _tuplify(self, dict):
+		return tuple(sorted(dict.items()))
+
+
+
 	def handCmp(self, hand1, hand2):
 		'''
 		Returns: 
@@ -21,6 +134,12 @@ class Matchup():
 			* 0 if hand1 is tied with hand2
 			* -1 if hand1 is ranked worse than hand2
 		'''
+		if (hand1 or hand2) is None:
+			return 0
+
+		if hand1 is None or hand2 is None:
+			return 1 if hand1 else -1
+
 		h1, h2 = hand1[:], hand2[:]
 
 		while h1 and h2:
@@ -47,18 +166,18 @@ class Matchup():
 		Return rank of hand and winning indices of cards in that hand
 
 		Hand ranks:
-			* 11	-> 3 in evo set, 2 in evo set
-			* 10	-> 5 fully evolved
-			* 9		-> 5 same level
-			* 8		-> 3 in evo set only
-			* 7		-> 2 in evo set, 2 in evo set
-			* 6		-> 4 same level
-			* 5		-> 3 same level, 2 same level
-			* 4		-> 3 same level only
-			* 3		-> 2 in evo set only
-			* 2		-> 2 same level, 2 same level
-			* 1		-> 2 same level (only possible when len(cards) < 5)
-			* 0		-> nothing
+			* 11 	-> 3 in evo set, 2 in evo set
+			* 10 	-> 5 fully evolved
+			* 9 	-> 5 same level
+			* 8 	-> 3 in evo set only
+			* 7 	-> 2 in evo set, 2 in evo set
+			* 6 	-> 4 same level
+			* 5 	-> 3 same level, 2 same level
+			* 4 	-> 3 same level only
+			* 3 	-> 2 in evo set only
+			* 2 	-> 2 same level, 2 same level
+			* 1 	-> 2 same level (only possible when len(cards) < 5)
+			* 0 	-> nothing
 		'''
 
 		typeCounts  = [NUM_LEVELS for x in range(NUM_TYPES)]
