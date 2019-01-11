@@ -1,29 +1,29 @@
 
 import re
 
-types = ['normal', 'fire', 'fighting', 'water', 'flying', 'grass', 'poison',
-		 'electric', 'ground', 'psychic', 'rock', 'ice', 'bug', 'dragon', 
+types = ['normal', 'fire', 'fight', 'water', 'flying', 'grass', 'poison',
+		 'elec', 'ground', 'psy', 'rock', 'ice', 'bug', 'dragon', 
 		 'ghost', 'dark', 'steel', 'fairy']
 
 typeEffChart = {
 	'normal': [],
-	'fighting': ['normal', 'rock', 'steel', 'ice', 'dark'],
-	'flying': ['fighting', 'bug', 'grass'],
+	'fight': ['normal', 'rock', 'steel', 'ice', 'dark'],
+	'flying': ['fight', 'bug', 'grass'],
 	'poison': ['grass', 'fairy'],
-	'ground': ['poison', 'rock', 'steel', 'fire', 'electric'],
+	'ground': ['poison', 'rock', 'steel', 'fire', 'elec'],
 	'rock': ['flying', 'bug', 'fire', 'ice'],
-	'bug': ['grass', 'psychic', 'dark'],
-	'ghost': ['ghost', 'psychic'],
+	'bug': ['grass', 'psy', 'dark'],
+	'ghost': ['ghost', 'psy'],
 	'steel': ['rock', 'ice'],
 	'fire': ['bug', 'steel', 'grass', 'ice'],
 	'water': ['ground', 'rock', 'fire'],
 	'grass': ['ground', 'rock', 'water'],
-	'electric': ['flying', 'water'],
-	'psychic': ['fighting', 'poison'],
+	'elec': ['flying', 'water'],
+	'psy': ['fight', 'poison'],
 	'ice': ['flying', 'ground', 'grass', 'dragon'],
 	'dragon': ['dragon'],
-	'dark': ['ghost', 'psychic'],
-	'fairy': ['fighting', 'dragon', 'dark']
+	'dark': ['ghost', 'psy'],
+	'fairy': ['fight', 'dragon', 'dark']
 }
 
 NUM_LEVELS = 3

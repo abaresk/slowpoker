@@ -12,17 +12,6 @@ another.
 
 from src.constants import *
 
-# class Team():
-# 	'''
-# 	card is id of the card
-# 	tokens is the stock of tokens that card has (initialized as its level)
-# 	'''
-# 	def __init__(self, hand):
-# 		self.card = card
-# 		self.tokens = card % NUM_LEVELS + 1
-# 		return
-
-
 class Strategy():
 	'''
 	Final state of matchup, showing the opponent's reduced hand and the moves that
@@ -66,7 +55,7 @@ class Matchup():
 
 		# out of all ways to expend 1 token, we want to return the one that 
 		# damages the opponent most
-		bestStrat = None
+		bestStrat = Strategy(defHand, moveHistory)	# default, do nothing
 
 		# for each defender...
 		for defCard in defTargets:
@@ -78,10 +67,7 @@ class Matchup():
 					self._prepareState(attTeam, defTeam, attCard, defCard, moveHistory, -1)
 
 					strat = self._bestStrategyAux(attTeam, defTeam, memoStrategy, moveHistory)
-					if bestStrat is None:
-						bestStrat = strat
-					else:
-						bestStrat = strat if self.handCmp(strat.defHand, bestStrat.defHand) < 0 else bestStrat
+					bestStrat = strat if self.handCmp(strat.defHand, bestStrat.defHand) < 0 else bestStrat
 
 					self._prepareState(attTeam, defTeam, attCard, defCard, moveHistory, 1)
 

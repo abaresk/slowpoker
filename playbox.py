@@ -6,6 +6,8 @@ if __name__ == '__main__':
 	t = Table(2)
 	m = Matchup()
 
+	t.swapCards([1,2])
+
 
 	# Test
 	attHand = [name2card(x) for x in ['rock3', 'psychic2', 'steel2', 'dragon2', 'ice1']]
