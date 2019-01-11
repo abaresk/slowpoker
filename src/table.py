@@ -1,6 +1,7 @@
 
 import random
 import numpy as np
+import getpass
 from collections import defaultdict
 
 from src.constants import *
@@ -8,6 +9,11 @@ from src.matchups import Matchup
 
 NUM_CARDS_COVERED = 3
 
+class Player():
+	def __init__(self, name=None, pw=None):
+		self.name = name
+		self._pw = pw
+		return
 
 class Table():
 	def __init__(self, numPlayers):
@@ -17,9 +23,12 @@ class Table():
 		
 		self.hands = None
 		self.reserve = None
+		self.viewHands = None
 		self.redraw()
 
 		self.matchup = Matchup()
+
+		# Copy of self.hands that can be optionally sorted for viewing
 
 		return
 
@@ -29,26 +38,32 @@ class Table():
 		hands = drawn[:SIZE_HAND * self.numPlayers]
 		self.hands = np.reshape(hands, (self.numPlayers, SIZE_HAND)).tolist()
 		self.reserve = drawn[SIZE_HAND * self.numPlayers:]
+
+		self.viewHands = self.hands[:]
 		return
 
 
-	def displayHand(self, playerId):
+	def displayHand(self, playerId, isTransparent):
 		if playerId == self.currentPlayer:
 			print('Your hand:\t\t', end='')
 		else:
 			print("Opponent's hand:\t", end='')
-		
-		for i, card in enumerate(self.hands[playerId]):
-			if playerId != self.currentPlayer and i < NUM_CARDS_COVERED:
-				print('****', end='\t')
-			else:
+
+		if playerId == self.currentPlayer or isTransparent:
+			for card in self.hands[playerId]:
 				print(card2name(card), end='\t')
+		else:
+			for i, card in enumerate(self.viewHands[playerId]):
+				if i < NUM_CARDS_COVERED:
+					print('****', end='\t')
+				else:
+					print(card2name(card), end='\t')
 		print()
 		return
 
-	def displayTable(self):
-		self.displayHand(not self.currentPlayer)
-		self.displayHand(self.currentPlayer)
+	def displayTable(self, isTransparent):
+		self.displayHand(not self.currentPlayer, isTransparent)
+		self.displayHand(self.currentPlayer, isTransparent)
 		return
 		
 
@@ -64,7 +79,9 @@ class Table():
 
 		for i in range(len(swapSet)):
 			self.hands[self.currentPlayer].append(self.reserve.pop())
+
 		return
+
 
 
 	def doHandBattle(self, willPrintMoves):
@@ -72,20 +89,26 @@ class Table():
 		Have each hand reduce the opponent's hand as much as possible.
 		New hands take the spot of the old ones.
 		'''
-		hand_1_remaining, hand_0_moves = self.matchup.bestStrategy(self.hands[0], self.hands[1])
-		hand_0_remaining, hand_1_moves = self.matchup.bestStrategy(self.hands[1], self.hands[0])
+		hand_0_attacks = self.matchup.bestStrategy(self.hands[0], self.hands[1])
+		hand_1_attacks = self.matchup.bestStrategy(self.hands[1], self.hands[0])
+
+		hand_0_moves, hand_0_remaining = hand_0_attacks.moveHistory, hand_1_attacks.defHand
+		hand_1_moves, hand_1_remaining = hand_1_attacks.moveHistory, hand_0_attacks.defHand
 
 		if willPrintMoves:
-			print("Player 1's moves:")
+			print(self.players[0].name + "'s moves:")
 			self.printMoves(hand_0_moves)
-			print("Player 2's moves:")
+			print(self.players[1].name + "'s moves:")
 			self.printMoves(hand_1_moves)
 
 		self.hands[0], self.hands[1] = hand_0_remaining, hand_1_remaining
 
-		print("Player 1's final hand:")
+		print()
+		print(self.players[0].name + "'s final hand:")
 		self.printHand(self.hands[0])
-		print("Player 2's final hand:")
+
+		print()
+		print(self.players[1].name + "'s final hand:")
 		self.printHand(self.hands[1])
 		return
 
@@ -93,11 +116,11 @@ class Table():
 		winner = self.matchup.handCmp(self.hands[0], self.hands[1])
 
 		if winner > 0:
-			print(self.players[0].name + 'wins!')
+			print(self.players[0].name + '!!')
 		elif winner < 0:
-			print(self.players[1].name + 'wins!')
+			print(self.players[1].name + ' !!')
 		else:
-			print('It was a tie!')
+			print('No one. It was a tie.')
 		return
 
 	def printMoves(self, moves):
@@ -114,10 +137,9 @@ class Table():
 		return
 
 
-	# def sortHands(self):
-	# 	for i, hand in enumerate(self.hands):
-	# 		self.hands[i] = self._sortHand(hand)
-	# 	return
+	def sortHand(self):
+		self.hands[self.currentPlayer] = self.sortedHand(self.hands[self.currentPlayer])
+		return
 
 	def sortedHand(self, hand):
 		# group into same types
@@ -139,6 +161,35 @@ class Table():
 	# Auxiliary sorting function
 	def _sumlist(self, lst):
 		return sum([(1 + x % NUM_LEVELS) for x in lst])
+
+
+	# Gameplay features
+	def addPlayer(self, name, pw):
+		assert(len(self.players) < 2)
+
+		playerId = len(self.players)
+		self.players[playerId] = Player(name, pw)
+		return
+
+	def endTurn(self):
+		self.switchPlayers()
+
+		# "Hide" previous player's decisions
+		for i in range(5000):
+			print()
+
+		self.authenticatePlayer()
+		return
+
+	def authenticatePlayer(self):
+		print('Hello, ' + self.players[self.currentPlayer].name + '! Please enter your password.')
+		pw = getpass.getpass(prompt='Password: ', stream=None)
+		
+		while pw != self.players[self.currentPlayer]._pw:
+			print('That password was incorrect. Please enter your password.')
+			pw = getpass.getpass(prompt='Password: ', stream=None)
+
+		return
 
 
 
