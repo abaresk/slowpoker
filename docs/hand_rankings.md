@@ -5,7 +5,7 @@ The following hand rankings are listed from best to worst.
 
 | Hand		| Description	| Example	|
 | ----  	| -----------	| -------	|
-| Full house - Types | 3 mons of the same type, 2 mons of a different type | |
+| Full house - Types | 3 mons of the same type, 2 mons of a different type | ![hand1](images/hand1.png)|
 | Fully evolved	| 5 fully evolved mons	| 	|
 | Level flush	| 5 mons of the same level 	| 	|
 | Full type 	| 3 mons of the same type 	| 	|
