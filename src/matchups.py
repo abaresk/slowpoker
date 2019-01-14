@@ -162,7 +162,8 @@ class Matchup():
 			# Remove winning cards from both hands and try again
 			h1, h2 = [x for i,x in enumerate(h1) if i not in hwin1], [x for i,x in enumerate(h2) if i not in hwin2]
 
-		return 0
+		return 1 if h1 else -1 if h2 else 0
+
 
 
 	def findHandRank(self, hand):
@@ -192,47 +193,44 @@ class Matchup():
 			levelCounts[card % NUM_LEVELS] -= 1
 
 
-		# 3 in evo set, 2 in evo set
+		# full house (types)
 		if 0 in typeCounts and 1 in typeCounts:
-			return (11, self._winnerIndices(hand, 'evo', [typeCounts.index(0), typeCounts.index(1)]))
+			return (9, self._winnerIndices(hand, 'evo', [typeCounts.index(0), typeCounts.index(1)]))
 
-		# 5 fully evolved
-		elif levelCounts[2] == NUM_TYPES - 5:
-			return (10, self._winnerIndices(hand, 'level', [2]))
-
-		# 5 in same level
+		# flush (level)
 		elif NUM_TYPES - 5 in levelCounts:
-			return (9, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 5)]))
+			return (8, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 5)]))
 
-		# 3 in evo set only
+		# flush (types)
 		elif 0 in typeCounts:
-			return (8, self._winnerIndices(hand, 'evo', [typeCounts.index(0)]))
+			return (7, self._winnerIndices(hand, 'evo', [typeCounts.index(0)]))
 
-		# 2 in evo set, 2 in evo set
+		# two pair (types)
 		elif len([x for x in typeCounts if x == 1]) == 2:
-			return (7, self._winnerIndices(hand, 'evo', [i for i,x in enumerate(typeCounts) if x == 1]))
+			return (6, self._winnerIndices(hand, 'evo', [i for i,x in enumerate(typeCounts) if x == 1]))
 
-		# 4 same level
+		# quadruple (level)
 		elif NUM_TYPES - 4 in levelCounts:
-			return (6, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 4)]))
+			return (5, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 4)]))
 
-		# 3 same level, 2 same level
+		# full house (level)
 		elif NUM_TYPES - 3 in levelCounts and NUM_TYPES - 2 in levelCounts:
-			return (5, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 3), levelCounts.index(NUM_TYPES - 2)]))
+			return (4, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 3), levelCounts.index(NUM_TYPES - 2)]))
 
-		# 3 same level only
-		elif NUM_TYPES - 3 in levelCounts:
-			return (4, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 3)]))
+		# This rank would mess with the final probabilities and incentives
+		# # pair (types)
+		# elif 1 in typeCounts:
+		# 	return (4, self._winnerIndices(hand, 'evo', [typeCounts.index(1)]))
 
-		# 2 in evo set only
-		elif 1 in typeCounts:
-			return (3, self._winnerIndices(hand, 'evo', [typeCounts.index(1)]))
-
-		# 2 same level, 2 same level
+		# two pair (level)
 		elif len([x for x in levelCounts if x == NUM_TYPES - 2]) == 2:
-			return (2, self._winnerIndices(hand, 'level', [i for i,x in enumerate(levelCounts) if x == NUM_TYPES - 2]))
+			return (3, self._winnerIndices(hand, 'level', [i for i,x in enumerate(levelCounts) if x == NUM_TYPES - 2]))
 
-		# 2 same level only (can only happen with hand of size < 5)
+		# triple (level)
+		elif NUM_TYPES - 3 in levelCounts:
+			return (2, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 3)]))
+
+		# pair (level)
 		elif NUM_TYPES - 2 in levelCounts:
 			return (1, self._winnerIndices(hand, 'level', [levelCounts.index(NUM_TYPES - 2)]))
 
