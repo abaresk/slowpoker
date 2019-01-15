@@ -7,7 +7,7 @@ from collections import defaultdict
 from src.constants import *
 from src.matchups import Matchup
 
-NUM_CARDS_COVERED = 3
+NUM_CARDS_COVERED = 2
 
 class Player():
 	def __init__(self, name=None, pw=None):
@@ -20,6 +20,9 @@ class Table():
 		self.currentPlayer = 0
 		self.numPlayers = numPlayers
 		self.players = {}
+
+		self.stocks = []
+		self.bets = []
 		
 		self.hands = None
 		self.reserve = None
@@ -40,6 +43,8 @@ class Table():
 		self.reserve = drawn[SIZE_HAND * self.numPlayers:]
 
 		self.viewHands = self.hands[:]
+
+		self.bets = [0 for i in range(self.numPlayers)]
 		return
 
 
@@ -112,7 +117,7 @@ class Table():
 		self.printHand(self.hands[1])
 		return
 
-	def printWinner(self):
+	def doWinnings(self):
 		winner = self.matchup.handCmp(self.hands[0], self.hands[1])
 
 		if winner > 0:
@@ -121,7 +126,38 @@ class Table():
 			print(self.players[1].name + ' !!')
 		else:
 			print('No one. It was a tie.')
+
+		self._distributeWinnings(winner)
 		return
+
+	def _distributeWinnings(self, winner):
+		if winner == 0:
+			# each player gets their bets back
+			for i in range(NUM_PLAYERS):
+				self.stocks[i] += self.bets[i]
+		
+		else:
+			potSum = sum(self.bets)
+
+			handRank = self.matchup.findHandRank(self.hands[winner < 0])
+
+			# if you guessed you'd win by that rank or higher...
+			if handRank >= self.bets[winner < 0]:
+				#...dealer adds pot * corresponding factor to your total
+				potSum += self._getAddedPayout(potSum, handRank)
+
+			self.hands[winner < 0] += potSum
+		return 
+
+	def _getAddedPayout(self, potSum, handRank):
+		if handRank > 1:
+			return potSum << (handRank - 2)
+		elif handRank == 1:
+			return potSum >> 1
+		else:
+			return 0
+
+
 
 	def printMoves(self, moves):
 		for move in moves:
@@ -134,6 +170,11 @@ class Table():
 		for card in hand:
 			print(card2name(card), end=' ')
 		print()
+		return
+
+	def printStocks(self):
+		for i in range(self.numPlayers):
+			print(self.players[i].name + "'s coin stock:\t" + str(self.stocks[i]))
 		return
 
 
@@ -164,12 +205,22 @@ class Table():
 
 
 	# Gameplay features
-	def addPlayer(self, name, pw):
+	def addPlayer(self, name, pw, stockInitial):
 		assert(len(self.players) < 2)
 
 		playerId = len(self.players)
 		self.players[playerId] = Player(name, pw)
+
+		self.stocks.append(stockInitial)
+		self.bets.append(0)
 		return
+
+	def addBet(self, betVal):
+		if betVal <= self.stocks[self.currentPlayer]:
+			self.bets[self.currentPlayer] = betVal
+			return True
+		print('You do not have enough coins to make this bet.')
+		return False
 
 	def endTurn(self):
 		self.switchPlayers()

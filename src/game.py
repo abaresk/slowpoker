@@ -3,6 +3,8 @@ import getpass
 
 from src.table import Table
 
+INITIAL_STOCK = 100
+
 # Game functions
 class Game():
 	def __init__(self):
@@ -38,7 +40,7 @@ class Game():
 				pw2 = getpass.getpass(prompt='Password: ', stream=None)
 
 
-			self.table.addPlayer(name, pw1)
+			self.table.addPlayer(name, pw1, INITIAL_STOCK)
 
 			print("You're all set, " + name + '!')
 			print()
@@ -49,15 +51,31 @@ class Game():
 		print("'view {mine theirs}'\tlets you view your hand or your opponent's.")
 		print("'view' \t\t\tlets you view the entire table")
 		print("'sort' \t\t\tlets you sort your hand")
-		print("'bet' \t\t\tlets you place a bet")
+		print("'ranks'\t\t\tlets you view the different hand ranks")
+		print("'bet <cost value>' \tlets you place a bet at rank whose cost is <cost value>")
 		print("'swap <card numbers>' \tlets you swap out the cards you listed in <card numbers>")
 		print("'end' \t\t\tends your turn")
-		print()
+		return
+
+	def giveRanks(self):
+		print("Cost\tPayout\tName\t\t\tDescription")
+		print("9\t128\tFull house (types)\t3 mons same type, 2 mons same type")
+		print("8\t64\tFlush (levels)\t\t5 mons same level")
+		print("7\t32\tFlush (types)\t\t3 mons same type")
+		print("6\t16\tTwo pair (types)\t2 mons same type, 2 mons same type")
+		print("5\t8\tQuadruple (level)\t4 mons same level")
+		print("4\t4\tFull house (level)\t3 mons same level, 2 mons same level")
+		print("3\t2\tTwo pair (level)\t2 mons same level, 2 mons same level")
+		print("2\t1\tTriple (level)\t\t3 mons same level")
+		print("1\t1/2\tPair (level)\t\t2 mons same level")
+		print("0\t0\tHigh level\t\totherwise, goes to higher level sum")
 		return
 
 
 	# Gameplay
 	def doRound(self):
+		# TODO: Take ante from both players
+
 		self.doTurn()
 		self.table.endTurn()
 		self.doTurn()
@@ -79,12 +97,14 @@ class Game():
 		print()
 
 		input('And the winner is..... ')
-		self.table.printWinner()
+		self.table.doWinnings()
+		self.table.printStocks()
 		return
 
 	def doTurn(self):
 		turnEnd = False
 		swapUsed = False
+		hasBet = False
 
 		print('It is your turn, ' + self.table.players[self.table.currentPlayer].name + '.')
 		
@@ -111,18 +131,21 @@ class Game():
 			elif command[0] == 'sort':
 				self.table.sortHand()
 				self.table.displayHand(self.table.currentPlayer, isTransparent=False)
+			
+			elif command[0] == 'ranks':
+				self.giveRanks()
 
 			elif command[0] == 'swap' and len(command) > 1:
-				if swapUsed:
-					print('You already swapped your cards this turn.')
-				else:
-					swapSet = set([int(index) - 1 for index in command[1:]])
-					self.table.swapCards(swapSet)
-					self.table.displayHand(self.table.currentPlayer, isTransparent=False)
-					swapUsed = True
+				swapUsed = self._swapTurn(command, swapUsed, hasBet)
+
+			elif command[0] == 'bet' and len(command) == 2:
+				hasBet = self._betTurn(command, hasBet)
 
 			elif command[0] == 'end':
-				turnEnd = True
+				if not hasBet:
+					print('You need to make a bet before you can end your turn.')
+				else:
+					turnEnd = True
 
 			else:
 				print('Invalid command')
@@ -131,10 +154,35 @@ class Game():
 
 		return
 
+	def _swapTurn(self, command, swapUsed, hasBet):
+		if swapUsed:
+			print('You already swapped your cards this turn.')
+			return True
 
-	def showResults(self):
+		elif not hasBet:
+			print("You cannot swap your cards until you have made a bet.")
+			return False
 
-		return
+		swapSet = set([int(index) - 1 for index in command[1:]])
+		self.table.swapCards(swapSet)
+		self.table.displayHand(self.table.currentPlayer, isTransparent=False)
+		return True
+
+	def _betTurn(self, command, hasBet):
+		if hasBet:
+			return True
+		try:
+			betVal = int(command[1])
+			if 0 <= betVal <= 9:
+				return self.table.addBet(betVal)
+		except ValueError:
+			pass
+			
+		print('Invalid hand rank')
+		return False
+
+
+
 
 	# Game running
 	def run(self):

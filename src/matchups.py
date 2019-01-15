@@ -171,18 +171,16 @@ class Matchup():
 		Return rank of hand and winning indices of cards in that hand
 
 		Hand ranks:
-			* 11 	-> 3 in evo set, 2 in evo set
-			* 10 	-> 5 fully evolved
-			* 9 	-> 5 same level
-			* 8 	-> 3 in evo set only
-			* 7 	-> 2 in evo set, 2 in evo set
-			* 6 	-> 4 same level
-			* 5 	-> 3 same level, 2 same level
-			* 4 	-> 3 same level only
-			* 3 	-> 2 in evo set only
-			* 2 	-> 2 same level, 2 same level
-			* 1 	-> 2 same level (only possible when len(cards) < 5)
-			* 0 	-> nothing
+			* 9 	-> 3 same type, 2 same type
+			* 8 	-> 5 same level
+			* 7 	-> 3 same type
+			* 6 	-> 2 same type, 2 same type
+			* 5 	-> 4 same level
+			* 4 	-> 3 same level, 2 same level
+			* 3 	-> 2 same level, 2 same level
+			* 2 	-> 3 same level
+			* 1 	-> 2 same level
+			* 0 	-> default
 		'''
 
 		typeCounts  = [NUM_LEVELS for x in range(NUM_TYPES)]

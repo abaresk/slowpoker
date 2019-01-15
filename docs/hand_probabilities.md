@@ -6,9 +6,9 @@ Hand rankings are determined by the probability of each hand being randomly sele
 There are `54 choose 5` = 3,162,510 ways to draw a hand from this deck.
 
 ## Joint Hand Probabilities
-The row hands pertain to matches among types of Pokémon. The column hands pertain to matches among levels of Pokémon.
+The rows pertain to matches among types of Pokémon. The columns pertain to matches among levels of Pokémon.
 
-| Name	| Flush	| Quadruple	| Full house	| Triple	| Two pair 	| Total	|
+| Types \ Levels	| Flush	| Quadruple	| Full house	| Triple	| Two pair 	| Total	|
 | ---	| ---	| ---	| ---	| ---	| ---	| ---	|
 | **Full house**	| 0| 0| 0| 0| 918| **918**|
 | **Flush**	| 0 | 0 | 0 | 7,344 | 14,688 | **22,032** |
@@ -17,6 +17,7 @@ The row hands pertain to matches among types of Pokémon. The column hands perta
 | **No pairs** | 25,704 | 257,040 | 514,080 | 514,080 | 771,120 | **2,082,024** |
 | **Total** | **25,704** | **330,480** | **749,088** | **793,152** | **1,264,086** | ***3,162,510*** |
 
+See [formulas](formulas.md) for more info.
 
 ## Ranking Probabilities
 From the table above we get the following hand rankings:
@@ -53,4 +54,4 @@ I was not able to calculate the probability of each hand formulaically, so the f
 
 <sup>1</sup> Notice that these two are flipped compared to the drawing probabilities above.
 
-<sup>2</sup> This is a little catch in the probabilities. Whichever of these two is ranked higher will be more probable than the other. But they are not very distant in probability. That said, it may be worthwhile to always bet Quadruple when deciding between it and Full house (level).
+<sup>2</sup> This is a little catch in the probabilities. Whichever of these two is ranked higher will be more probable than the other. But they are not very distant in likelihood.
