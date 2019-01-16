@@ -54,6 +54,7 @@ class Game():
 		print("'ranks'\t\t\tlets you view the different hand ranks")
 		print("'bet <cost value>' \tlets you place a bet at rank whose cost is <cost value>")
 		print("'swap <card numbers>' \tlets you swap out the cards you listed in <card numbers>")
+		print("'coins'\t\t\tlets you see how many coins you have")
 		print("'end' \t\t\tends your turn")
 		return
 
@@ -74,20 +75,23 @@ class Game():
 
 	# Gameplay
 	def doRound(self):
-		# TODO: Take ante from both players
+		# Take ante from both players
+		print('1 coin will be deducted from both players as ante.')
+		self.table.takeAnte()
+		self.table.printStocks()
+		print()
 
 		self.doTurn()
-		self.table.endTurn()
+		self.endTurn()
 		self.doTurn()
 
 		# Buffer between turns and results
-		for i in range(5000):
-			print()
+		self.printBuffer()
 
 		print('Your turns have ended. Here are your hands:')
 		for i in range(2):
 			print(self.table.players[i].name)
-			self.table.displayHand(i, isTransparent=True)
+			self.table.printHand(self.table.hands[i])
 			print()
 		
 		input('Continue? ')
@@ -98,6 +102,7 @@ class Game():
 
 		input('And the winner is..... ')
 		self.table.doWinnings()
+		print()
 		self.table.printStocks()
 		return
 
@@ -141,6 +146,9 @@ class Game():
 			elif command[0] == 'bet' and len(command) == 2:
 				hasBet = self._betTurn(command, hasBet)
 
+			elif command[0] == 'coins':
+				self.table.printYourStock()
+
 			elif command[0] == 'end':
 				if not hasBet:
 					print('You need to make a bet before you can end your turn.')
@@ -170,16 +178,39 @@ class Game():
 
 	def _betTurn(self, command, hasBet):
 		if hasBet:
+			print('You already made your bet for this round.')
 			return True
 		try:
 			betVal = int(command[1])
 			if 0 <= betVal <= 9:
-				return self.table.addBet(betVal)
+				return self.table.placeBet(betVal)
 		except ValueError:
 			pass
 			
 		print('Invalid hand rank')
 		return False
+
+
+	def printBuffer(self):
+		for i in range(5000):
+			print()
+		return
+
+	def authenticatePlayer(self):
+		print('Hello, ' + self.table.players[self.table.currentPlayer].name + '! Please enter your password.')
+		pw = getpass.getpass(prompt='Password: ', stream=None)
+		
+		while pw != self.table.players[self.table.currentPlayer]._pw:
+			print('That password was incorrect. Please enter your password.')
+			pw = getpass.getpass(prompt='Password: ', stream=None)
+
+		return
+
+	def endTurn(self):
+		self.table.switchPlayers()
+		self.printBuffer()
+		self.authenticatePlayer()
+		return
 
 
 
@@ -188,9 +219,15 @@ class Game():
 	def run(self):
 		self.gameBegin()
 		self.initPlayers()
-		
+
+		cont = input('Press enter to begin. ')
+
+		roundNum = 1
 		anotherRound = True
 		while anotherRound:
+			self.printBuffer()
+			print('ROUND ' + str(roundNum) + '!')
+			print()
 			self.table.redraw()
 			self.doRound()
 
@@ -198,6 +235,7 @@ class Game():
 			cont = input('Would you like to play another round? ').strip().lower()
 			anotherRound = not cont or cont[0] == 'y'
 			print()
+			roundNum += 1
 
 		return
 

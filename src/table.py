@@ -23,7 +23,7 @@ class Table():
 
 		self.stocks = []
 		self.bets = []
-		
+
 		self.hands = None
 		self.reserve = None
 		self.viewHands = None
@@ -70,7 +70,7 @@ class Table():
 		self.displayHand(not self.currentPlayer, isTransparent)
 		self.displayHand(self.currentPlayer, isTransparent)
 		return
-		
+
 
 
 
@@ -87,6 +87,12 @@ class Table():
 
 		return
 
+	def takeAnte(self):
+		for i in range(NUM_PLAYERS):
+			assert(self.stocks[i] > 0)
+			self.stocks[i] -= 1
+			self.bets[i] += 1
+		return
 
 
 	def doHandBattle(self, willPrintMoves):
@@ -135,24 +141,34 @@ class Table():
 			# each player gets their bets back
 			for i in range(NUM_PLAYERS):
 				self.stocks[i] += self.bets[i]
-		
+
 		else:
 			potSum = sum(self.bets)
 
-			handRank = self.matchup.findHandRank(self.hands[winner < 0])
+			handRank = self.matchup.findHandRank(self.hands[winner < 0])[0]
+			betRank = self.bets[winner < 0] - 1
+
+			print('You bet that your hand would be rank ' + str(betRank) + ' or higher...')
 
 			# if you guessed you'd win by that rank or higher...
-			if handRank >= self.bets[winner < 0]:
+			if handRank >= betRank:
 				#...dealer adds pot * corresponding factor to your total
-				potSum += self._getAddedPayout(potSum, handRank)
+				potSum += self._calcAddedPayout(potSum, betRank)
+				print('And it was!! Your final rank was ' + str(betRank))
+				print()
+				print(self.players[winner < 0].name + ' wins a grand total of ' + str(potSum) + ' coins!')
+			else:
+				print("But it wasn't :( Your final rank was " + str(handRank))
+				print()
+				print(self.players[winner < 0].name + ' still wins a total of ' + str(potSum) + ' coins.')
 
-			self.hands[winner < 0] += potSum
-		return 
+			self.stocks[winner < 0] += potSum
+		return
 
-	def _getAddedPayout(self, potSum, handRank):
-		if handRank > 1:
-			return potSum << (handRank - 2)
-		elif handRank == 1:
+	def _calcAddedPayout(self, potSum, betRank):
+		if betRank > 1:
+			return potSum << (betRank - 2)
+		elif betRank == 1:
 			return potSum >> 1
 		else:
 			return 0
@@ -170,6 +186,10 @@ class Table():
 		for card in hand:
 			print(card2name(card), end=' ')
 		print()
+		return
+
+	def printYourStock(self):
+		print('Your coin stock:\t' + str(self.stocks[self.currentPlayer]))
 		return
 
 	def printStocks(self):
@@ -215,55 +235,11 @@ class Table():
 		self.bets.append(0)
 		return
 
-	def addBet(self, betVal):
-		if betVal <= self.stocks[self.currentPlayer]:
-			self.bets[self.currentPlayer] = betVal
+	def placeBet(self, betVal):
+		if betVal > self.stocks[self.currentPlayer]:
+			print('You do not have enough coins to make this bet.')
+			return False
+		else:
+			self.bets[self.currentPlayer] = betVal + 1
+			self.stocks[self.currentPlayer] -= betVal
 			return True
-		print('You do not have enough coins to make this bet.')
-		return False
-
-	def endTurn(self):
-		self.switchPlayers()
-
-		# "Hide" previous player's decisions
-		for i in range(5000):
-			print()
-
-		self.authenticatePlayer()
-		return
-
-	def authenticatePlayer(self):
-		print('Hello, ' + self.players[self.currentPlayer].name + '! Please enter your password.')
-		pw = getpass.getpass(prompt='Password: ', stream=None)
-		
-		while pw != self.players[self.currentPlayer]._pw:
-			print('That password was incorrect. Please enter your password.')
-			pw = getpass.getpass(prompt='Password: ', stream=None)
-
-		return
-
-
-
-# if __name__ == '__main__':
-# 	t = Table(2)
-# 	m = Matchup()
-
-# 	for i in range(100):
-# 		t.redraw()
-# 		t.sortHands()
-
-# 		for hand in t.hands:
-# 			htype = m.findHandRank(hand)
-# 			if htype[0] > 9:
-# 				print(htype)
-# 				t.display()
-# 			htype = m.findHandRank(hand)
-# 			# if htype[0] > 9:
-# 			print(htype)
-
-# 		t.display()
-# 		rank = m.handCmp(t.hands[0], t.hands[1])
-
-# 		print(rank)
-
-# 	print('Everything passed')
